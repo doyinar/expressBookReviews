@@ -38,26 +38,41 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/', async function (req, res) => {
+public_users.get('/', async function (req, res) {
   try {
     const booksData = await getBooks();
     return res.status(200).json(booksData);
-  } catch {
+  } catch (error) {
     return res.status(500).json({
       message: "Error retrieving  books"
     });
   }
 });
 
-// Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here (done)
-    const isbn = req.params.isbn;
+const getBookByISBN = (isbn) => {
+  return new Promise((resolve, reject) => {
     if (books[isbn]) {
-        return res.status(200).json(books[isbn]);
+      resolve(books[isbn]);
     } else {
-        return res.status(404).json({message: "Book not found"});
+      reject(new Error("Book not found"));
     }
+  });
+};
+
+// Get book details based on ISBN
+public_users.get('/isbn/:isbn', async function (req, res) {
+  
+  try {
+    const isbn = req.params.isbn;
+    const book = await getBookByISBN(isbn);
+
+    return res.status(200).json(book);
+  } catch (error) {
+    return res.status(404).json({
+      message: "Book not found"
+    });
+  }
+
  });
   
 // Get book details based on author
