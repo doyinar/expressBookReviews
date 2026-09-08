@@ -74,18 +74,31 @@ public_users.get('/isbn/:isbn', async function (req, res) {
   }
 
  });
+
+const getBookByAuthor = (author) => {
+  return new Promise((resolve, reject) => {
+    const searchAuthor = author.toLowerCase();
+    const booksByAuthor = Object.values(books).filter(book => book.author.toLowerCase() === searchAuthor);
+
+    if (booksByAuthor.length > 0) {
+      resolve(booksByAuthor);
+    } else {
+      reject(new Error("No book found for the entered author"));
+    }
+  });
+};
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here (done)
-    const searchAuthor = req.params.author.toLowerCase();
-    const booksKeys = Object.values(books);
+public_users.get('/author/:author',async function (req, res) {
+    try {
+      const author = req.params.author;
+      const bookByAuthor = await getBookByAuthor(author);
 
-    const booksByAuthor = booksKeys.filter(book => book.author.toLowerCase() === searchAuthor);
-    if (booksByAuthor.length > 0) {
-        return res.status(200).json(booksByAuthor);
-    } else {
-        return res.status(404).json({message: "No book found for this author"});
+      return res.status(200).json(bookByAuthor);
+    } catch (error) {
+      res.status(404).json({
+        message: "No book found for this author"
+      });
     }
 });
 
